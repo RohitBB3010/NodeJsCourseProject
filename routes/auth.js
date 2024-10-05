@@ -7,17 +7,18 @@ const User = require('../models/userModel');
 router.get('/login', authController.getLogin);
 
 router.post('/login', [
-    body('email').isEmail().withMessage('The Email is not valid'),
-    body('password', 'Please enter a password with only letters and numbers and atleast 5 characters long').isAlphanumeric().isLength({ min : 5}).custom((value, {req}) => {
+    body('email').isEmail().withMessage('The Email is not valid').custom((value, {req}) => {
 
         return User.findOne({email : value}).then(userDoc => {
             if(!userDoc){
+                console.log("Inside no user docs")
                 return Promise.reject('Account with this email does not exist');
             }
 
             return true;
         })
     }),
+    body('password', 'Please enter a password with only letters and numbers and atleast 5 characters long').isAlphanumeric().isLength({ min : 5})
 ],authController.postLogin);
 
 router.post('/logout', authController.postLogout);

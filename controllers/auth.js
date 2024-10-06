@@ -28,7 +28,8 @@ exports.getLogin = (req, res, next) => {
         oldInput : {
             email : '',
             password : ''
-        }
+        },
+        validationErrors : []
     });
 }
 
@@ -40,6 +41,9 @@ exports.postLogin = (req, res, next) => {
 
     if(!errors.isEmpty()){
 
+        console.log(email);
+        console.log(password);
+
         return res.status(422).render('auth/login', {
             pageTitle : 'Login',
             path : '/login',
@@ -47,7 +51,8 @@ exports.postLogin = (req, res, next) => {
             oldInput : {
                 email : email,
                 password : password
-            }
+            },
+            validationErrors : errors.array(),
         });
     }
 
@@ -60,7 +65,8 @@ exports.postLogin = (req, res, next) => {
                 oldInput : {
                     email : email,
                     password : password
-                }
+                },
+                validationErrors : [],
             })
         }
 
@@ -75,8 +81,15 @@ exports.postLogin = (req, res, next) => {
                 })
             }
 
-            req.flash('error', 'Incorrect password');
-            res.redirect('/login');
+            return res.status(422).render('auth/login', {
+                path : '/login',
+                pageTitle : 'Login',
+                oldInput : {
+                    email : email,
+                    password : password
+                },
+                validationErrors : errors.array()
+            });
         }).catch(err => {
         console.log(err);
     });
@@ -90,6 +103,8 @@ exports.postSignUp = (req, res, next) => {
     const errors = validationResult(req);
 
     if(!errors.isEmpty()){
+
+        console.log(errors.array());
         return res.status(422).render('auth/signup', {
             path : '/signup',
             pageTitle : 'SignUp',
@@ -98,7 +113,9 @@ exports.postSignUp = (req, res, next) => {
                 email : email,
                 password : password,
                 confirmPassword : confirmPassword,
-            }
+                validationErrors : errors.array(),
+            },
+            validationErrors : errors.array(),
         })
     }
 
@@ -152,7 +169,8 @@ exports.getSignUp = (req, res, next) => {
             email : "",
             password : "",
             confirmPassword : "",
-        }
+        },
+        validationErrors : []
     });
 }
 

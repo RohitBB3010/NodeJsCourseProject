@@ -1,11 +1,14 @@
 const Product = require("../models/productsModel");
 const mongoDb = require('mongodb');
+const { validationResult } = require('express-validator');
 
 exports.getAddProduct = (req, res, next) => {
-    res.render('admin/edit_product', {
+    res.render('admin/edit-product', {
       pageTitle: 'Add Product',
       path: '/admin/add-product',
       editing : false,
+      errorMessage : null,
+      validationErrors : []
     });
 }
 
@@ -17,9 +20,29 @@ exports.addProduct = (req, res, next) => {
   const price = req.body.price;
   const creatorId = req.session.user._id;
 
+  const errors = validationResult(req);
+
   const product = new Product({
     title : title, price : price, imageUrl : imageUrl, description : description, creatorId : creatorId
   });
+
+  if(!errors.isEmpty()){
+    
+    return res.render('admin/edit-product', {
+      pageTitle : 'Add Product',
+      path : 'admin/edit-product',
+      editing : false,
+      hasError : true,
+      errorMessage : errors.array()[0].msg,
+      validationErrors : errors.array(),
+      product : {
+        title : title,
+        imageUrl : imageUrl,
+        price : price,
+        description : description
+      }
+    })
+  }
 
   product.save().then(result => {
     res.redirect('/admin/products');
@@ -54,11 +77,13 @@ exports.getEditProduct = (req, res, next) => {
     if(!product){
       return res.redirect('404');
     }
-    res.render('admin/edit_product', {
+    res.render('admin/edit-product', {
       pageTitle : 'Edit Product',
       path : '/admin/edit_product',
       editing : editMode,
       product : product,
+      errorMessage : null,
+      validationErrors : [],
     });
   }).then(result => {
     console.log('Product updated');
@@ -73,7 +98,7 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(prodId).then(product => {
 
-    if(product.creatorId !== req.user._id){
+    if(product.creatorId.toString() !== req.user._id.toString()){
       console.log("Not correct user");
       return res.redirect('/');
     }

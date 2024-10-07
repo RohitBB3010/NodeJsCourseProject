@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const csurf = require('csurf');
 const flash = require('connect-flash');
 const User = require('./models/userModel');
+const errorController = require('./controllers/error');
 
 require('dotenv').config({path : path.join(__dirname, 'apikeys.env')});
 
@@ -23,7 +24,7 @@ const csurfProtection = csurf();
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-const errorController = require('./controllers/404');
+const { error } = require('console');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -65,6 +66,18 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.get('/500', errorController.get500);
+
+app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+
+    return res.status(500).render('500', {
+        pageTitle : 'Error',
+        path : '/500',
+        isAuthenticated : req.session.isLoggedIn,
+    });
+});
 
 mongoose.connect(MONGODB_URI).then(result => {
 

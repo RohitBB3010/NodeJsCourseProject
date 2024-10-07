@@ -47,8 +47,10 @@ exports.addProduct = (req, res, next) => {
   product.save().then(result => {
     res.redirect('/admin/products');
   }).catch(err => {
-    console.log(err);
-  })
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 }
 
 exports.getProducts = (req, res, next) => {
@@ -59,13 +61,17 @@ exports.getProducts = (req, res, next) => {
         pageTitle : 'Admin Products',
         path : '/admin/products',
       });
-    }).catch((err) => {
-      console.log(err);
+    }).catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 }
 
 exports.getEditProduct = (req, res, next) => {
-  console.log("Here");
+
+  throw new Error('Dummy error at get edit product');
+  
   const editMode = req.query.edit; 
   if(!editMode){
     res.redirect('/');
@@ -88,7 +94,9 @@ exports.getEditProduct = (req, res, next) => {
   }).then(result => {
     console.log('Product updated');
   }).catch(err => {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
   });
 }
 
@@ -111,8 +119,10 @@ exports.postEditProduct = (req, res, next) => {
     product.save().then(result => {
       res.redirect('/admin/products');
     }).catch(err => {
-      console.log(err);
-    });;
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
   })
 }
 
@@ -125,6 +135,8 @@ exports.postDeleteProduct = (req, res, next) => {
     console.log("Product deleted from database");
     res.redirect('/admin/products');
   }).catch(err => {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
   });
 }

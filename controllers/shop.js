@@ -14,7 +14,6 @@ exports.getProducts = (req, res, next) => {
     error.httpStatusCode = 500;
     return next(error);
   });
-
 }
 
 exports.getIndex = (req, res, next ) => {

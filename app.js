@@ -7,6 +7,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const bodyParser = require('body-parser');
 const csurf = require('csurf');
 const flash = require('connect-flash');
+const multer = require('multer');
 const User = require('./models/userModel');
 const errorController = require('./controllers/error');
 
@@ -35,6 +36,25 @@ const store = new MongoDBStore({
     collection : 'sessions'
 });
 
+const fileStorage = multer.diskStorage({
+    destination : (req, file, cb) => {
+        cb(null, 'images');
+    },
+    filename : (req, file, cb) => {
+        cb(null, new Date().toISOString() + ' - ' + file.originalName);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if(
+        file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
+    ) {
+        cb(null, true);
+    } else{
+        cb(null, false);
+    }
+};
+
 app.use(session({
     secret : 'rohit', resave : false, saveUninitialized : false, store : store
 }));
@@ -56,6 +76,11 @@ app.use((req, res, next) => {
 app.use(csurfProtection);
 app.use(flash());
 
+app.use(multer({
+    fileFilter : fileFilter,
+    storage : fileStorage
+}).single('image'));
+
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.csrfToken = req.csrfToken();
@@ -75,6 +100,7 @@ app.use((error, req, res, next) => {
     return res.status(500).render('500', {
         pageTitle : 'Error',
         path : '/500',
+        csrfToken : req.csrfToken,
         isAuthenticated : req.session.isLoggedIn,
     });
 });

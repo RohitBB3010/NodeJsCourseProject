@@ -16,6 +16,9 @@ exports.getAddProduct = (req, res, next) => {
 exports.addProduct = (req, res, next) => {
 
   console.log('Request received to add product');
+
+  console.log(req.file);
+  
   const title = req.body.title;
   const image = req.file;
   const price = req.body.price;
@@ -38,24 +41,24 @@ exports.addProduct = (req, res, next) => {
       });
   }
 
-  //const errors = validationResult(req);
+  const errors = validationResult(req);
 
-  // if (!errors.isEmpty()) {
-  //     console.log(errors.array());
-  //     return res.status(422).render('admin/edit-product', {
-  //         pageTitle: 'Add Product',
-  //         path: '/admin/add-product',
-  //         editing: false,
-  //         hasError: true,
-  //         product: {
-  //             title: title,
-  //             price: price,
-  //             description: description
-  //         },
-  //         errorMessage: errors.array()[0].msg,
-  //         validationErrors: errors.array()
-  //     });
-  // }
+  if (!errors.isEmpty()) {
+      console.log(errors.array());
+      return res.status(422).render('admin/edit-product', {
+          pageTitle: 'Add Product',
+          path: '/admin/add-product',
+          editing: false,
+          hasError: true,
+          product: {
+              title: title,
+              price: price,
+              description: description
+          },
+          errorMessage: errors.array()[0].msg,
+          validationErrors: errors.array()
+      });
+  }
 
   const imageUrl = image.path; // Assuming this works correctly
 
@@ -64,7 +67,7 @@ exports.addProduct = (req, res, next) => {
       price: price,
       description: description,
       imageUrl: imageUrl,
-      userId: req.user._id // Ensure userId is set correctly
+      creatorId: req.user._id // Ensure userId is set correctly
   });
 
   product.save()
@@ -82,65 +85,29 @@ exports.addProduct = (req, res, next) => {
 
 // exports.addProduct = (req, res, next) => {
 
+//   console.log("Adding product");
+
 //   const title = req.body.title;
-//   const image = req.file;
+//   const imageUrl = req.body.imageUrl;
 //   const price = req.body.price;
-//   const description = req.body.descriptionl
+//   const description = req.body.description;
 
-//   if(!image){
-//     return res.status(422).render('admin/edit-product', {
-//       pageTitle : 'Add Product',
-//       path : '/admin/add-product',
-//       editing : false,
-//       hasError : true,
-//       product : {
-//         title : title,
-//         price : price,
-//         description : description
-//       },
-//       errorMessage : 'Attached file is not an image',
-//       validationErrors : []
-//     });
-//   }
+//   console.log(req.body.imageUrl);
 
-//   const errors = validationResult(req);
+//   const product = Product({
+//     title : title,
+//     price : price,
+//     imageUrl : imageUrl,
+//     description : description,
+//     creatorId : req.user._id,
+//   });
 
-//     if(!errors.isEmpty()){
-//       console.log(errors.array());
-//       return res.status(422).render('admin/edit-product', {
-//         pageTitle : 'Add Product',
-//         path : '/admin/add-product',
-//         editing : false,
-//         hasError : true,
-//         product : {
-//           title : title,
-//           price : price,
-//           description : description
-//         },
-//         errorMessage : errors.array()[0].msg,
-//         validationErrors : errors.array()
-//       })
-//     }
-
-//     const imageUrl = image.path;
-
-//     const product = new Product({
-//       title : title,
-//       price : price,
-//       description : description,
-//       imageUrl : imageUrl,
-//       userId : req.user.userId
-//     });
-
-//     product.save().then(result => {
-//       console.log('Created product');
-//       res.redirect('/admin/products');
-//     }).catch(err => {
-//       console.log(err);
-//       const error = new Error(err);
-//       error.httpStatusCode = 500;
-//       return next(error);
-//     })
+//   product.save().then(result => {
+//     console.log("Added product");
+//     res.redirect('/admin/add-product');
+//   }).catch(err => {
+//     console.log(err);
+//   })
 // }
 
 exports.getProducts = (req, res, next) => {

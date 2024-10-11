@@ -7,8 +7,8 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const bodyParser = require('body-parser');
 const csurf = require('csurf');
 const flash = require('connect-flash');
-const multer = require('multer');
 const User = require('./models/userModel');
+const multer = require('multer');
 const errorController = require('./controllers/error');
 
 require('dotenv').config({path : path.join(__dirname, 'apikeys.env')});
@@ -22,12 +22,36 @@ const MONGODB_URI = 'mongodb+srv://rohit:Rohit123%40@cluster0.ha5sq.mongodb.net/
 const app = express();
 const csurfProtection = csurf();
 
+const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'images');
+    },
+    filename: (req, file, cb) => {
+      cb(null, new Date().getTime() + '-' + file.originalname);
+    }
+  });
+  
+  const fileFilter = (req, file, cb) => {
+    if (
+      file.mimetype === 'image/png' ||
+      file.mimetype === 'image/jpg' ||
+      file.mimetype === 'image/jpeg'
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  };
+
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 const { error } = require('console');
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(
+    multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+  );
 app.use(express.static(path.join(__dirname, 'public')));
 
 
@@ -35,25 +59,6 @@ const store = new MongoDBStore({
     uri : MONGODB_URI,
     collection : 'sessions'
 });
-
-const fileStorage = multer.diskStorage({
-    destination : (req, file, cb) => {
-        cb(null, 'images');
-    },
-    filename : (req, file, cb) => {
-        cb(null, new Date().toISOString() + ' - ' + file.originalName);
-    }
-});
-
-const fileFilter = (req, file, cb) => {
-    if(
-        file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
-    ) {
-        cb(null, true);
-    } else{
-        cb(null, false);
-    }
-};
 
 app.use(session({
     secret : 'rohit', resave : false, saveUninitialized : false, store : store
@@ -76,10 +81,6 @@ app.use((req, res, next) => {
 app.use(csurfProtection);
 app.use(flash());
 
-app.use(multer({
-    fileFilter : fileFilter,
-    storage : fileStorage
-}).single('image'));
 
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;
@@ -91,12 +92,13 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
-app.get('/500', errorController.get500);
+ app.get('/500', errorController.get500);
 
 app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
 
+  console.log('Is logged in is :' + req.session.isLoggedIn);
     return res.status(500).render('500', {
         pageTitle : 'Error',
         path : '/500',

@@ -60,7 +60,7 @@ exports.addProduct = (req, res, next) => {
       });
   }
 
-  const imageUrl = image.path; // Assuming this works correctly
+  const imageUrl = image.path.replace(/\\/g, '/');
 
   const product = new Product({
       title: title,

@@ -1,6 +1,7 @@
 const Product = require("../models/productsModel");
 const mongoDb = require('mongodb');
 const { validationResult } = require('express-validator');
+const fileHelper = require('../util/file');
 
 exports.getAddProduct = (req, res, next) => {
 
@@ -185,9 +186,15 @@ exports.postDeleteProduct = (req, res, next) => {
   
   const id = req.body.productId;
 
-  Product.deleteOne({_id : id, creatorId : req.user._id})
-  .then(result => {
-    console.log("Product deleted from database");
+  Product.findById(id).then(product => {
+    if(!product){
+      return next(new Error('No Product found'));
+    }
+    console.log(product);
+
+    fileHelper.deleteFile(product.imageUrl);
+    return Product.deleteOne({_id : id, creatorId : req.user._id});
+  }).then(() => {
     res.redirect('/admin/products');
   }).catch(err => {
     const error = new Error(err);

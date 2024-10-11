@@ -36,6 +36,7 @@
     "mysql2": "^3.11.0",
     "nodemailer": "^6.9.15",
     "nodemailer-sendgrid": "^1.0.3",
+    "pdfkit": "^0.15.0",
     "pug": "^2.0.3",
     "sendgrid": "^5.2.3",
     "sequelize": "^6.37.3"
